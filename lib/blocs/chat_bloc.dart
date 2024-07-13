@@ -1,4 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../models/chat_message.dart';
+import '../services/web_socket_service.dart';
 
 class ChatEvent {}
 class SendMessage extends ChatEvent {
@@ -20,7 +22,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
 
   ChatBloc(this.webSocketService) : super(ChatInitial()) {
     webSocketService.messages.listen((message) {
-      add(SendMessage(message));
+      add(SendMessage(message as String));
     });
   }
 

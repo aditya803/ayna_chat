@@ -1,4 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../models/user.dart';
+import '../repos/auth_repository.dart';
 
 class AuthEvent {}
 class AuthLogin extends AuthEvent {
