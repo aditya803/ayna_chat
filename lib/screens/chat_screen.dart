@@ -1,40 +1,81 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../blocs/auth_bloc.dart';
-import '../blocs/chat_bloc.dart';
-import '../services/web_socket_service.dart';
-import '../widgets/chat_input_field.dart';
-import '../widgets/message_list.dart';
 
-class ChatScreen extends StatelessWidget {
-  final WebSocketService _webSocketService = WebSocketService();
+import '../blocs/auth/auth_bloc.dart';
+import '../blocs/auth/auth_event_state.dart';
+import '../blocs/chat/chat_bloc.dart';
+import '../blocs/chat/chat_event_state.dart';
 
-  ChatScreen({super.key});
+class ChatPage extends StatelessWidget {
+  final TextEditingController messageController = TextEditingController();
+
+  void _sendMessage(BuildContext context) {
+    if (messageController.text.isNotEmpty) {
+      context.read<ChatBloc>().add(SendMessage(message: messageController.text));
+      messageController.clear();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Chat'),
+        title: Text('Chat'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout),
+            icon: Icon(Icons.logout),
             onPressed: () {
-              BlocProvider.of<AuthBloc>(context).add(AuthLogout());
+              context.read<AuthBloc>().add(LogOut());
+              Navigator.pushReplacementNamed(context, '/');
             },
           ),
         ],
       ),
-      body: BlocProvider(
-        create: (context) => ChatBloc(_webSocketService),
-        child: Column(
-          children: [
-            const Expanded(
-              child: MessageList(),
+      body: Column(
+        children: [
+          Expanded(
+            child: BlocBuilder<ChatBloc, ChatState>(
+              builder: (context, state) {
+                if (state is ChatUpdated) {
+                  final messages = state.messages;
+                  return ListView.builder(
+                    itemCount: messages.length,
+                    itemBuilder: (context, index) {
+                      final message = messages[index];
+                      return ListTile(
+                        title: Align(
+                          alignment: Alignment.centerLeft, // All messages are treated the same
+                          child: Text(message.message),
+                        ),
+                      );
+                    },
+                  );
+                }
+                return Center(child: CircularProgressIndicator());
+              },
             ),
-            ChatInputField(),
-          ],
-        ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: messageController,
+                    onSubmitted: (_) => _sendMessage(context), // Handle Enter key
+                    decoration: InputDecoration(
+                      hintText: 'Type a message',
+                    ),
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(Icons.send),
+                  onPressed: () => _sendMessage(context), // Handle send button
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
