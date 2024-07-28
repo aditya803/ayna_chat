@@ -38,6 +38,8 @@ abstract class AuthState extends Equatable {
 
 class AuthInitial extends AuthState {}
 
-class Authenticated extends AuthState {}
+class Authenticated extends AuthState {
+  get userId => null;
+}
 
 class AuthFailed extends AuthState {}

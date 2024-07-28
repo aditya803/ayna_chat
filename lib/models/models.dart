@@ -16,10 +16,13 @@ class User extends HiveObject {
 @HiveType(typeId: 1)
 class Message extends HiveObject {
   @HiveField(0)
-  String message;
+  final String message;
 
-  // @HiveField(1)
-  // bool isSentByMe;
+  @HiveField(1)
+  final bool isSentByMe;
 
-  Message({required this.message});
+  @HiveField(2)
+  final String userId; // Add this field
+
+  Message(this.message, {required this.isSentByMe, required this.userId});
 }

@@ -6,41 +6,58 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import 'blocs/auth/auth_bloc.dart';
+import 'blocs/auth/auth_event_state.dart';
 import 'blocs/chat/chat_bloc.dart';
+import 'blocs/chat/chat_event_state.dart';
 import 'models/models.dart';
 
 void main() async {
   await Hive.initFlutter();
-  Hive.registerAdapter(UserAdapter());
   Hive.registerAdapter(MessageAdapter());
-  await Hive.openBox('userBox');
-  await Hive.openBox('chatBox');
+  await Hive.openBox('messages');
+
   runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(
-          create: (context) => AuthBloc(userBox: Hive.box('userBox')),
-        ),
-        BlocProvider(
-          create: (context) => ChatBloc(
-            webSocketService: WebSocketService('wss://echo.websocket.org'),
-            messageBox: Hive.box('chatBox'),
-          ),
-        ),
-      ],
+    return BlocProvider(
+      create: (context) => AuthBloc(),
       child: MaterialApp(
+        title: 'Flutter Chat App',
+        initialRoute: '/',
         routes: {
-          '/': (context) => LoginPage(),
-          '/signup': (context) => SignUpPage(),
+          '/': (context) => AuthPage(),
           '/chat': (context) => ChatPage(),
         },
-        initialRoute: '/',
       ),
+    );
+  }
+}
+
+class AuthPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<AuthBloc, AuthState>(
+      builder: (context, state) {
+        if (state is Authenticated) {
+          return MultiBlocProvider(
+            providers: [
+              BlocProvider(
+                create: (context) => ChatBloc(
+                  webSocketService: WebSocketService('wss://echo.websocket.org'),
+                  messageBox: Hive.box('messages'),
+                  userId: state.userId,
+                )..add(LoadMessages(userId: state.userId)),
+              ),
+            ],
+            child: ChatPage(userId: state.userId),
+          );
+        } else {
+          return LoginPage();
+        }
+      },
     );
   }
 }

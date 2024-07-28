@@ -7,7 +7,10 @@ import '../blocs/chat/chat_bloc.dart';
 import '../blocs/chat/chat_event_state.dart';
 
 class ChatPage extends StatelessWidget {
+  final String userId; // Accept userId parameter
   final TextEditingController messageController = TextEditingController();
+
+  ChatPage({required this.userId}); // Constructor to initialize userId
 
   void _sendMessage(BuildContext context) {
     if (messageController.text.isNotEmpty) {

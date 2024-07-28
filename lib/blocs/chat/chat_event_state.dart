@@ -29,6 +29,14 @@ class MessageReceived extends ChatEvent {
   List<Object> get props => [message];
 }
 
+class LoadMessages extends ChatEvent {
+  final String userId;
+
+  const LoadMessages({required this.userId});
+
+  @override
+  List<Object> get props => [userId];
+}
 
 abstract class ChatState extends Equatable {
   const ChatState();
@@ -51,4 +59,5 @@ class ChatUpdated extends ChatState {
 class ChatMessageSent extends ChatState {}
 
 class ChatMessageReceived extends ChatState {}
+
 
